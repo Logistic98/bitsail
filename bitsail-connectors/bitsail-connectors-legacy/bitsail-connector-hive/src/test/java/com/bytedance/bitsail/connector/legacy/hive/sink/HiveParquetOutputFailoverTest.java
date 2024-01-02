@@ -1,12 +1,11 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2022-2023 Bytedance Ltd. and/or its affiliates.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -49,7 +48,6 @@ import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
@@ -69,15 +67,23 @@ import static org.mockito.ArgumentMatchers.any;
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({HiveMetaClientUtil.class})
-@PowerMockIgnore(value = {"javax.management.*", "org.apache.hive.*"})
-@SuppressStaticInitializationFor("javax.security.auth.kerberos.KeyTab")
+@PowerMockIgnore(value = {"javax.management.*", "org.apache.hive.*", "javax.xml.parsers.", "com.sun.org.apache.xerces.internal.jaxp.*", "org.slf4j.*"})
 public class HiveParquetOutputFailoverTest {
   static final BitSailConfiguration DEFAULT_CONF;
+  static final BitSailConfiguration CONF_WITHOUT_COLUMNS;
 
   static {
     try {
-      DEFAULT_CONF =
-          BitSailConfiguration.from(new File(Paths.get(HiveParquetOutputFailoverTest.class.getClassLoader().getResource("hive/hive_writer.json").toURI()).toString()));
+      DEFAULT_CONF = BitSailConfiguration.from(
+          new File(
+              Paths.get(
+                  HiveParquetOutputFailoverTest.class.getClassLoader()
+                      .getResource("hive/hive_writer.json").toURI()).toString()));
+
+      CONF_WITHOUT_COLUMNS = BitSailConfiguration.from(
+          new File(Paths.get(
+              HiveParquetOutputFailoverTest.class.getClassLoader()
+                  .getResource("hive/hive_writer_without_columns.json").toURI()).toString()));
     } catch (URISyntaxException e) {
       throw new RuntimeException(e);
     }
@@ -154,10 +160,19 @@ public class HiveParquetOutputFailoverTest {
   }
 
   @Test
-  public void testOutputWithFailOver() throws Exception {
+  public void testDefaultConfOutputWithFailOver() throws Exception {
+    commonOutputWithFailOver(DEFAULT_CONF);
+  }
+
+  @Test
+  public void testWithoutColumnsConfOutputWithFailOver() throws Exception {
+    commonOutputWithFailOver(CONF_WITHOUT_COLUMNS);
+  }
+
+  private void commonOutputWithFailOver(BitSailConfiguration conf) throws Exception {
     int parallelism = 2;
     HiveOutputFormat<Row> outputFormat = new HiveOutputFormat();
-    outputFormat.initFromConf(getCommonConf(), DEFAULT_CONF);
+    outputFormat.initFromConf(getCommonConf(), conf);
     outputFormat.setEmptyMessenger();
     outputFormat.setDirtyCollector(new NoOpDirtyCollector());
     MockStreamingRuntimeContextForTest runtimeContext = new MockStreamingRuntimeContextForTest();
@@ -172,10 +187,19 @@ public class HiveParquetOutputFailoverTest {
   }
 
   @Test
-  public void testAndCompareOutputWithDiffWritableExtractor() throws Exception {
+  public void testDefaultConfOutputWithDiffWritableExtractor() throws Exception {
+    commonTestAndCompareOutputWithDiffWritableExtractor(DEFAULT_CONF);
+  }
+
+  @Test
+  public void testWithoutColumnsConfOutputWithDiffWritableExtractor() throws Exception {
+    commonTestAndCompareOutputWithDiffWritableExtractor(CONF_WITHOUT_COLUMNS);
+  }
+
+  private void commonTestAndCompareOutputWithDiffWritableExtractor(BitSailConfiguration conf) throws Exception {
     int parallelism = 2;
     HiveOutputFormat<Row> parquetOutputFormat = new HiveOutputFormat();
-    parquetOutputFormat.initFromConf(getCommonConf(), DEFAULT_CONF);
+    parquetOutputFormat.initFromConf(getCommonConf(), conf);
     parquetOutputFormat.setEmptyMessenger();
     parquetOutputFormat.setDirtyCollector(new NoOpDirtyCollector());
     MockStreamingRuntimeContextForTest runtimeContext1 = new MockStreamingRuntimeContextForTest();

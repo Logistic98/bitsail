@@ -1,12 +1,11 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2022-2023 Bytedance Ltd. and/or its affiliates.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,10 +27,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.apache.flink.table.descriptors.DescriptorProperties.noValidation;
-import static org.apache.flink.table.descriptors.FileSystemValidator.CONNECTOR_PATH;
 import static org.apache.flink.table.descriptors.FileSystemValidator.CONNECTOR_TYPE_VALUE;
-import static org.apache.flink.table.descriptors.FormatDescriptorValidator.FORMAT_TYPE;
-import static org.apache.flink.table.descriptors.OldCsvValidator.FORMAT_TYPE_VALUE;
 
 /**
  * The validator for {@link StreamingFileSystemValidator}.
@@ -325,7 +321,6 @@ public class StreamingFileSystemValidator extends ConnectorDescriptorValidator {
     properties.validateString(PARTITION_DEFAULT_NAME, true, 0);
 
     validatePartitionFrequency(properties);
-    validateFormatType(properties);
   }
 
   private void validatePartitionFrequency(DescriptorProperties properties) {
@@ -334,20 +329,6 @@ public class StreamingFileSystemValidator extends ConnectorDescriptorValidator {
     frequencyValidation.put(PARTITION_FREQUENCY_VALUE_DAILY, noValidation());
     frequencyValidation.put(PARTITION_FREQUENCY_VALUE_HOURLY, noValidation());
     properties.validateEnum(PARTITION_FREQUENCY, true, frequencyValidation);
-  }
-
-  private void validateFormatType(DescriptorProperties properties) {
-    final Map<String, Consumer<String>> formatValidation = new HashMap<>();
-    formatValidation.put(
-        FORMAT_TYPE_VALUE,
-        key -> properties.validateString(CONNECTOR_PATH, false, 1));
-    formatValidation.put(
-        HDFS_FORMAT_TYPE_VALUE,
-        key -> properties.validateString(CONNECTOR_PATH, false, 1));
-    formatValidation.put(
-        HIVE_FORMAT_TYPE_VALUE,
-        key -> validateHiveFormatType(properties));
-    properties.validateEnum(FORMAT_TYPE, false, formatValidation);
   }
 
   private void validateHiveFormatType(DescriptorProperties properties) {

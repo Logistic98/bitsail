@@ -1,20 +1,17 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Copyright 2022-2023 Bytedance Ltd. and/or its affiliates.
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.bytedance.bitsail.connector.rocketmq.source;
@@ -29,6 +26,7 @@ import com.bytedance.bitsail.base.extension.ParallelismComputable;
 import com.bytedance.bitsail.base.parallelism.ParallelismAdvice;
 import com.bytedance.bitsail.common.configuration.BitSailConfiguration;
 import com.bytedance.bitsail.common.option.CommonOptions;
+import com.bytedance.bitsail.common.option.ReaderOptions;
 import com.bytedance.bitsail.common.row.Row;
 import com.bytedance.bitsail.connector.rocketmq.option.RocketMQSourceOptions;
 import com.bytedance.bitsail.connector.rocketmq.source.coordinator.RocketMQSourceSplitCoordinator;
@@ -94,6 +92,7 @@ public class RocketMQSource
   public ParallelismAdvice getParallelismAdvice(BitSailConfiguration commonConfiguration,
                                                 BitSailConfiguration rocketmqConfiguration,
                                                 ParallelismAdvice upstreamAdvice) throws Exception {
+
     String cluster = rocketmqConfiguration.get(RocketMQSourceOptions.CLUSTER);
     String topic = rocketmqConfiguration.get(RocketMQSourceOptions.TOPIC);
     String consumerGroup = rocketmqConfiguration.get(RocketMQSourceOptions.CONSUMER_GROUP);
@@ -103,17 +102,29 @@ public class RocketMQSource
         consumerGroup,
         UUID.randomUUID()
     ));
+
+    int messageQueueCount;
     try {
       consumer.start();
       Collection<MessageQueue> messageQueues = consumer.fetchMessageQueues(topic);
-      int adviceParallelism = Math.max(CollectionUtils.size(messageQueues) / DEFAULT_ROCKETMQ_PARALLELISM_THRESHOLD, 1);
-
-      return ParallelismAdvice.builder()
-          .adviceParallelism(adviceParallelism)
-          .enforceDownStreamChain(true)
-          .build();
+      messageQueueCount = CollectionUtils.size(messageQueues);
     } finally {
       consumer.shutdown();
     }
+
+    int adviceParallelism = -1;
+    if (rocketmqConfiguration.fieldExists(ReaderOptions.BaseReaderOptions.READER_PARALLELISM_NUM)) {
+      adviceParallelism = rocketmqConfiguration.get(ReaderOptions.BaseReaderOptions.READER_PARALLELISM_NUM);
+      adviceParallelism = Math.min(adviceParallelism, messageQueueCount);
+    }
+
+    if (adviceParallelism <= 0) {
+      adviceParallelism = Math.max(messageQueueCount / DEFAULT_ROCKETMQ_PARALLELISM_THRESHOLD, 1);
+    }
+
+    return ParallelismAdvice.builder()
+        .adviceParallelism(adviceParallelism)
+        .enforceDownStreamChain(true)
+        .build();
   }
 }

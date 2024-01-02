@@ -1,12 +1,11 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2022-2023 Bytedance Ltd. and/or its affiliates.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,10 +19,11 @@ package com.bytedance.bitsail.base.runtime.metrics;
 import com.bytedance.bitsail.base.connector.reader.DataReaderDAGBuilder;
 import com.bytedance.bitsail.base.connector.writer.DataWriterDAGBuilder;
 import com.bytedance.bitsail.base.constants.ClientMetricName;
+import com.bytedance.bitsail.base.execution.Mode;
 import com.bytedance.bitsail.base.execution.ProcessResult;
 import com.bytedance.bitsail.base.metrics.MetricManager;
 import com.bytedance.bitsail.base.metrics.manager.BitSailMetricManager;
-import com.bytedance.bitsail.base.runtime.RuntimePlugin;
+import com.bytedance.bitsail.base.runtime.RuntimePluggable;
 import com.bytedance.bitsail.common.configuration.BitSailConfiguration;
 import com.bytedance.bitsail.common.util.Pair;
 
@@ -37,7 +37,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class BitSailClientMetricsPlugin extends RuntimePlugin {
+public class BitSailClientMetricsPlugin implements RuntimePluggable {
 
   private MetricManager metricManager;
   private long startTime;
@@ -49,6 +49,11 @@ public class BitSailClientMetricsPlugin extends RuntimePlugin {
       return wrappedName;
     }
     return "[" + wrappedName + "]";
+  }
+
+  @Override
+  public boolean accept(Mode mode) {
+    return Mode.BATCH.equals(mode);
   }
 
   @Override
@@ -112,5 +117,10 @@ public class BitSailClientMetricsPlugin extends RuntimePlugin {
   @VisibleForTesting
   public List<Pair<String, String>> getAllMetricTags() {
     return metricManager.getAllMetricDimensions();
+  }
+
+  @Override
+  public String getComponentName() {
+    return "client-metric-plugin";
   }
 }

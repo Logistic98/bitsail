@@ -1,12 +1,11 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2022-2023 Bytedance Ltd. and/or its affiliates.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,6 +34,7 @@ import com.github.rholder.retry.RetryerBuilder;
 import com.github.rholder.retry.StopStrategies;
 import com.github.rholder.retry.WaitStrategies;
 import com.google.common.base.Strings;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
@@ -175,7 +175,7 @@ public class HiveMetaClientUtil {
       if (cause != null && cause instanceof TException) {
         throw (TException) cause;
       }
-      throw new RuntimeException("Error while calling HiveMetaClientUtil::getTableSchema. " + e.getMessage(), e);
+      throw new RuntimeException("Error while calling HiveMetaClientUtil::getColumnInfo. " + e.getMessage(), e);
     }
   }
 
@@ -199,7 +199,7 @@ public class HiveMetaClientUtil {
       if (cause != null && cause instanceof TException) {
         throw (TException) cause;
       }
-      throw new RuntimeException("Error while calling HiveMetaClientUtil::getTableSchema. " + e.getMessage(), e);
+      throw new RuntimeException("Error while calling HiveMetaClientUtil::getTableFormat. " + e.getMessage(), e);
     }
   }
 
@@ -224,7 +224,7 @@ public class HiveMetaClientUtil {
       if (cause != null && cause instanceof TException) {
         throw (TException) cause;
       }
-      throw new RuntimeException("Error while calling HiveMetaClientUtil::getTableSchema. " + e.getMessage(), e);
+      throw new RuntimeException("Error while calling HiveMetaClientUtil::getSerdeParameters. " + e.getMessage(), e);
     }
   }
 
@@ -252,7 +252,7 @@ public class HiveMetaClientUtil {
       if (cause != null && cause instanceof TException) {
         throw (TException) cause;
       }
-      throw new RuntimeException("Error while calling HiveMetaClientUtil::getTableSchema. " + e.getMessage(), e);
+      throw new RuntimeException("Error while calling HiveMetaClientUtil::getPartitionKeys. " + e.getMessage(), e);
     }
   }
 
@@ -287,7 +287,7 @@ public class HiveMetaClientUtil {
       if (cause != null && cause instanceof TException) {
         throw (TException) cause;
       }
-      throw new RuntimeException("Error while calling HiveMetaClientUtil::getTableSchema. " + e.getMessage(), e);
+      throw new RuntimeException("Error while calling HiveMetaClientUtil::getTablePath. " + e.getMessage(), e);
     }
   }
 
@@ -326,13 +326,16 @@ public class HiveMetaClientUtil {
       if (cause != null && cause instanceof TException) {
         throw (TException) cause;
       }
-      throw new RuntimeException("Error while calling HiveMetaClientUtil::getTableSchema. " + e.getMessage(), e);
+      throw new RuntimeException("Error while calling HiveMetaClientUtil::getPartitionPathList. " + e.getMessage(), e);
     }
   }
 
   public static void dropPartition(HiveConf hiveConf,
                                    String db, String tableName, String partition)
       throws TException {
+    if (StringUtils.isEmpty(partition)) {
+      return;
+    }
     try {
       RETRYER.call(() -> {
         long st = System.currentTimeMillis();
@@ -361,7 +364,7 @@ public class HiveMetaClientUtil {
       if (cause != null && cause instanceof TException) {
         throw (TException) cause;
       }
-      throw new RuntimeException("Error while calling HiveMetaClientUtil::getTableSchema.", e);
+      throw new RuntimeException("Error while calling HiveMetaClientUtil::dropPartition.", e);
     }
   }
 
@@ -389,13 +392,16 @@ public class HiveMetaClientUtil {
       if (cause != null && cause instanceof TException) {
         throw (TException) cause;
       }
-      throw new RuntimeException("Error while calling HiveMetaClientUtil::getTableSchema. " + e.getMessage(), e);
+      throw new RuntimeException("Error while calling HiveMetaClientUtil::getHiveTableMetadata. " + e.getMessage(), e);
     }
   }
 
   public static boolean hasPartition(HiveConf hiveConf,
                                      String db, String tableName, String partition)
       throws TException {
+    if (StringUtils.isEmpty(partition)) {
+      return false;
+    }
     try {
       return (Boolean) RETRYER.call(() -> {
         IMetaStoreClient client = null;
@@ -476,7 +482,7 @@ public class HiveMetaClientUtil {
       if (cause != null && cause instanceof TException) {
         throw (TException) cause;
       }
-      throw new RuntimeException("Error while calling HiveMetaClientUtil::hasPartition. " + e.getMessage(), e);
+      throw new RuntimeException("Error while calling HiveMetaClientUtil::addPartition. " + e.getMessage(), e);
     }
   }
 

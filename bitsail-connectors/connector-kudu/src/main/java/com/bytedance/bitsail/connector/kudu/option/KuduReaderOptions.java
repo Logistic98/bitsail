@@ -1,12 +1,11 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2022-2023 Bytedance Ltd. and/or its affiliates.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -114,22 +113,18 @@ public interface KuduReaderOptions extends ReaderOptions.BaseReaderOptions {
 
   ConfigOption<Boolean> CACHE_BLOCKS =
       key(READER_PREFIX + "enable_cache_blocks")
-          .defaultValue(true);
+          .defaultValue(false);
 
   ConfigOption<Long> SCAN_TIMEOUT =
       key(READER_PREFIX + "scan_timeout_ms")
           .defaultValue(30000L);
-
   ConfigOption<Long> SCAN_ALIVE_PERIOD_MS =
       key(READER_PREFIX + "scan_keep_alive_period_ms")
           .noDefaultValue(Long.class);
-
-  // Split configurations.
-  ConfigOption<String> SPLIT_STRATEGY =
-      key(READER_PREFIX + "split_strategy")
-          .defaultValue("SIMPLE_DIVIDE");
-
-  ConfigOption<String> SPLIT_CONFIGURATION =
-      key(READER_PREFIX + "split_config")
+  ConfigOption<Long> SCAN_SPLIT_SIZE_BYTES =
+      key(READER_PREFIX + "scan_split_size_bytes")
+          .defaultValue(-1L);
+  ConfigOption<String> PREDICATES_CONFIGURATION =
+      key(READER_PREFIX + "predicates")
           .noDefaultValue(String.class);
 }

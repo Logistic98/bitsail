@@ -1,12 +1,11 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2022-2023 Bytedance Ltd. and/or its affiliates.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -69,7 +69,7 @@ public class HadoopSecurityModule extends KerberosAbstractSecurityModule {
     kerberosHadoopConf.forEach(configuration::set);
     configuration.set(KerberosConstants.HADOOP_AUTH_KEY, "Kerberos");
 
-    UserGroupInformation.reset();
+    reset();
     UserGroupInformation.setConfiguration(configuration);
 
     userGroupInformation = UserGroupInformation.loginUserFromKeytabAndReturnUGI(principal, keytabPath);
@@ -78,6 +78,16 @@ public class HadoopSecurityModule extends KerberosAbstractSecurityModule {
 
   @Override
   public void logout() {
-    UserGroupInformation.reset();
+    reset();
+  }
+
+  private static void reset() {
+    try {
+      Method reset = UserGroupInformation.class.getDeclaredMethod("reset");
+      reset.setAccessible(true);
+      reset.invoke(null);
+    } catch (Exception e) {
+      LOG.error("Invoke reset.", e);
+    }
   }
 }

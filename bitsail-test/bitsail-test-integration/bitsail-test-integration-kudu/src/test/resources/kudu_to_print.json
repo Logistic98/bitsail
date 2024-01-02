@@ -1,0 +1,120 @@
+{
+  "job": {
+    "common": {
+      "job_id": 312,
+      "instance_id": 3124,
+      "job_name": "bitsail_test_integration_kudu_to_print",
+      "user_name": "test"
+    },
+    "reader": {
+      "class": "com.bytedance.bitsail.connector.kudu.source.KuduSource",
+      "kudu_table_name": "kudu_test_table",
+      "kudu_master_address_list": "0.0.0.0:7051,0.0.0.0:7151,0.0.0.0:7251",
+      "read_mode": "READ_LATEST",
+      "predicates": "[\"AND\", [\">=\", \"key\", 1000], [\"IN\", \"key\", [999, 1001, 1003, 1005, 1007, 1009]], [\"NULL\", \"field_varchar\"], [\"NOTNULL\",\"field_binary\"]]",
+      "columns": [
+        {
+          "name": "key",
+          "type": "int64"
+        },
+        {
+          "name": "field_boolean",
+          "type": "boolean"
+        },
+        {
+          "name": "field_int8",
+          "type": "int8"
+        },
+        {
+          "name": "field_int32",
+          "type": "int"
+        },
+        {
+          "name": "field_float",
+          "type": "float"
+        },
+        {
+          "name": "field_double",
+          "type": "double"
+        },
+        {
+          "name": "field_decimal",
+          "type": "decimal"
+        },
+        {
+          "name": "field_unix_timestamp",
+          "type": "unixtime_micros"
+        },
+        {
+          "name": "field_date",
+          "type": "date"
+        },
+        {
+          "name": "field_string",
+          "type": "string"
+        },
+        {
+          "name": "field_binary",
+          "type": "binary"
+        },
+        {
+          "name": "field_varchar",
+          "type": "varchar"
+        }
+      ]
+    },
+    "writer": {
+      "class": "com.bytedance.bitsail.connector.print.sink.PrintSink",
+      "columns": [
+        {
+          "name": "key",
+          "type": "long"
+        },
+        {
+          "name": "field_boolean",
+          "type": "boolean"
+        },
+        {
+          "name": "field_int8",
+          "type": "byte"
+        },
+        {
+          "name": "field_int32",
+          "type": "int"
+        },
+        {
+          "name": "field_float",
+          "type": "float"
+        },
+        {
+          "name": "field_double",
+          "type": "double"
+        },
+        {
+          "name": "field_decimal",
+          "type": "bigdecimal"
+        },
+        {
+          "name": "field_unix_timestamp",
+          "type": "timestamp"
+        },
+        {
+          "name": "field_date",
+          "type": "date"
+        },
+        {
+          "name": "field_string",
+          "type": "string"
+        },
+        {
+          "name": "field_binary",
+          "type": "binary"
+        },
+        {
+          "name": "field_varchar",
+          "type": "string"
+        }
+      ]
+    }
+  }
+}

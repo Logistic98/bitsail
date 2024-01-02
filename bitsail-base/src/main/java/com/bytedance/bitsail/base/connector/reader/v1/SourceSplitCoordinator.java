@@ -1,20 +1,17 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Copyright 2022-2023 Bytedance Ltd. and/or its affiliates.
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.bytedance.bitsail.base.connector.reader.v1;
@@ -31,16 +28,27 @@ public interface SourceSplitCoordinator<SplitT extends SourceSplit, StateT> exte
 
   void start();
 
+  /**
+   * Add a new source reader with the given subtask ID.
+   */
   void addReader(int subtaskId);
 
+  /**
+   * Add splits back to the split enumerator. This will only happen when a SourceReader fails and there are splits
+   * assigned to it after the last successful checkpoint.
+   */
   void addSplitsBack(List<SplitT> splits, int subtaskId);
 
+  /**
+   * Handles the request for a split. This method is called when the reader with the given subtask id calls the
+   * SourceReader.Context.sendSplitRequest() method.
+   */
   void handleSplitRequest(int subtaskId, @Nullable String requesterHostname);
 
   default void handleSourceEvent(int subtaskId, SourceEvent sourceEvent) {
   }
 
-  StateT snapshotState() throws Exception;
+  StateT snapshotState(long checkpoint) throws Exception;
 
   default void notifyCheckpointComplete(long checkpointId) throws Exception {
   }

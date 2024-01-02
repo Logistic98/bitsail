@@ -1,12 +1,11 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2022-2023 Bytedance Ltd. and/or its affiliates.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,8 +22,6 @@ import com.bytedance.bitsail.connector.doris.partition.DorisPartition;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NonNull;
-import org.apache.commons.lang.StringUtils;
 
 import java.io.Serializable;
 import java.util.List;
@@ -44,13 +41,6 @@ public class DorisOptions implements Serializable {
   private String tableName;
 
   private String tmpTableName;
-
-  /**
-   * Doris supports AGGREGATE, DUPLICATE and UNIQUE model.<br/>
-   *
-   * Currently, we only support UNIQUE table writer.
-   */
-  private TableModel tableModel;
 
   private String fieldDelimiter;
 
@@ -75,45 +65,6 @@ public class DorisOptions implements Serializable {
   public enum LOAD_CONTENT_TYPE {
     JSON,
     CSV
-  }
-
-  /**
-   * Doris Table Model
-   */
-  public enum TableModel {
-    /**
-     * Doris AGGREGATE Table
-     */
-    AGGREGATE("AGGREGATE"),
-
-    /**
-     * Doris UNIQUE Table
-     */
-    UNIQUE("UNIQUE"),
-
-    /**
-     * Doris DUPLICATE Table
-     */
-    DUPLICATE("DUPLICATE");
-
-    private final String model;
-
-    TableModel(String model) {
-      this.model = model;
-    }
-
-    public String getModel() {
-      return this.model;
-    }
-
-    public TableModel of(@NonNull String model) {
-
-      // compatible with internal doris-client
-      if (StringUtils.equalsIgnoreCase(model, "UNI")) {
-        return UNIQUE;
-      }
-      return TableModel.valueOf(model.toUpperCase());
-    }
   }
 }
 

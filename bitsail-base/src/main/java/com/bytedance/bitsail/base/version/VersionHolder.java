@@ -1,12 +1,11 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2022-2023 Bytedance Ltd. and/or its affiliates.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,6 +16,7 @@
 
 package com.bytedance.bitsail.base.version;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +35,7 @@ public class VersionHolder {
 
   private String gitCommitId = UNKNOWN_COMMIT_ID;
   private String gitBuildVersion = UNKNOWN;
+  private String gitBuildTime = UNKNOWN;
 
   private VersionHolder() {
     ClassLoader classLoader = VersionHolder.class.getClassLoader();
@@ -45,9 +46,23 @@ public class VersionHolder {
 
         gitCommitId = getProperty(properties, "git.commit.id", UNKNOWN_COMMIT_ID);
         gitBuildVersion = getProperty(properties, "git.build.version", UNKNOWN);
+        gitBuildTime = getProperty(properties, "git.build.time", UNKNOWN);
       }
     } catch (Exception e) {
       LOG.info("Cannot determine code revision: Unable to read version property file.", e);
+    }
+
+    // Obtain git version from package info
+    if (!isBuildVersionValid(gitBuildVersion)) {
+      try {
+        Package curPkg = VersionHolder.class.getPackage();
+        VersionInfoAnnotation annotation = curPkg.getAnnotation(VersionInfoAnnotation.class);
+        if (StringUtils.isNotEmpty(annotation.version())) {
+          gitBuildVersion = annotation.version();
+        }
+      } catch (Exception ignored) {
+        gitBuildVersion = UNKNOWN;
+      }
     }
   }
 
@@ -77,5 +92,15 @@ public class VersionHolder {
 
   public String getBuildVersion() {
     return gitBuildVersion;
+  }
+
+  public String getGitBuildTime() {
+    return gitBuildTime;
+  }
+
+  public static void print() {
+    LOG.info("BitSail Build Version: {}.", VersionHolder.getHolder().getBuildVersion());
+    LOG.info("BitSail Build Time: {}.", VersionHolder.getHolder().getGitBuildTime());
+    LOG.info("BitSail Build Commit: {}.", VersionHolder.getHolder().getGitCommitId());
   }
 }

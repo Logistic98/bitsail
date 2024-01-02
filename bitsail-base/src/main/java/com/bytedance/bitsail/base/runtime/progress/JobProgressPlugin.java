@@ -1,12 +1,11 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2022-2023 Bytedance Ltd. and/or its affiliates.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,10 +18,11 @@ package com.bytedance.bitsail.base.runtime.progress;
 
 import com.bytedance.bitsail.base.connector.reader.DataReaderDAGBuilder;
 import com.bytedance.bitsail.base.connector.writer.DataWriterDAGBuilder;
+import com.bytedance.bitsail.base.execution.Mode;
 import com.bytedance.bitsail.base.execution.ProcessResult;
 import com.bytedance.bitsail.base.progress.JobProgress;
 import com.bytedance.bitsail.base.progress.NoOpJobProgress;
-import com.bytedance.bitsail.base.runtime.RuntimePlugin;
+import com.bytedance.bitsail.base.runtime.RuntimePluggable;
 import com.bytedance.bitsail.common.BitSailException;
 import com.bytedance.bitsail.common.configuration.BitSailConfiguration;
 import com.bytedance.bitsail.common.exception.CommonErrorCode;
@@ -38,11 +38,16 @@ import java.util.List;
 import java.util.Objects;
 
 @NoArgsConstructor
-public class JobProgressPlugin extends RuntimePlugin {
+public class JobProgressPlugin implements RuntimePluggable {
 
   private static final Logger LOG = LoggerFactory.getLogger(JobProgressPlugin.class);
 
   private JobProgress progressReporter;
+
+  @Override
+  public boolean accept(Mode mode) {
+    return Mode.BATCH.equals(mode) || Mode.STREAMING.equals(mode);
+  }
 
   @Override
   public void configure(BitSailConfiguration commonConfiguration,
@@ -82,6 +87,11 @@ public class JobProgressPlugin extends RuntimePlugin {
     if (Objects.nonNull(progressReporter)) {
       progressReporter.close();
     }
+  }
+
+  @Override
+  public String getComponentName() {
+    return "progress-plugin";
   }
 
   @AllArgsConstructor

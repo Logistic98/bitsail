@@ -1,12 +1,11 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2022-2023 Bytedance Ltd. and/or its affiliates.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,7 +22,7 @@ import com.bytedance.bitsail.connector.redis.core.api.FailureHandler;
 import com.bytedance.bitsail.connector.redis.core.api.PipelineProcessor;
 import com.bytedance.bitsail.connector.redis.core.api.SplitPolicy;
 import com.bytedance.bitsail.connector.redis.core.jedis.JedisCommand;
-import com.bytedance.bitsail.connector.redis.core.jedis.JedisPluginErrorCode;
+import com.bytedance.bitsail.connector.redis.error.JedisPluginErrorCode;
 import com.bytedance.bitsail.connector.redis.error.RedisUnexpectedException;
 
 import com.github.rholder.retry.RetryException;
@@ -52,7 +51,6 @@ public abstract class AbstractPipelineProcessor implements PipelineProcessor {
 
   /**
    * Incremental ID in a single split which is used to print data every other period of time.
-   *
    */
   protected long processorId;
 
@@ -249,7 +247,7 @@ public abstract class AbstractPipelineProcessor implements PipelineProcessor {
         LOG.warn("command failed! connection info: [{}], command is: {}, error is: {}",
             jedis.getClient(),
             command.print(), ((Throwable) response).getMessage(), (Throwable) response);
-        
+
         failureHandler.handle(command, (Throwable) response, this);
       } else if (ttlResponse instanceof Throwable) {
         LOG.warn("Set ttl error! " + ((Throwable) ttlResponse).getMessage(), (Throwable) ttlResponse);
@@ -344,6 +342,9 @@ public abstract class AbstractPipelineProcessor implements PipelineProcessor {
         break;
       case ZADD:
         this.pipeline.zadd(command.getKey(), command.getScore(), command.getValue());
+        break;
+      case HMSET:
+        this.pipeline.hmset(command.getKey(), command.getHash());
         break;
       default:
         // cannot reach here

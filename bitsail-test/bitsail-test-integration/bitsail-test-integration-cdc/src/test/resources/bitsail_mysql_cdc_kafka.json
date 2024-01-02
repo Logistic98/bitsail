@@ -1,0 +1,30 @@
+{
+  "job": {
+    "common": {
+      "job_type": "BATCH",
+      "job_plugin_lib_dir": "plugin",
+      "job_plugin_conf_dir": "plugin_conf",
+      "enable_dynamic_loader": true,
+      "instance_id": "1",
+      "internal_instance_id": "1",
+      "extra_properties": {
+        "update-mode": "append"
+      },
+      "job_name": "bitsail_test_integration_cdc_to_kafka"
+    },
+    "reader": {
+      "class": "com.bytedance.bitsail.connector.cdc.mysql.source.MysqlCDCSource",
+      "db_name": "test",
+      "format_type": "debezium_json",
+      "table_name": "jdbc_source_test",
+      "connections": [
+      ],
+      "user_name": "root",
+      "password": "pw"
+    },
+    "writer": {
+      "class": "com.bytedance.bitsail.connector.kafka.sink.KafkaSink",
+      "content_type": "debezium_json"
+    }
+  }
+}

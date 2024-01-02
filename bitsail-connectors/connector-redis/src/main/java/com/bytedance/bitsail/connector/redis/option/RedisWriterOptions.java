@@ -1,12 +1,11 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2022-2023 Bytedance Ltd. and/or its affiliates.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -61,9 +60,12 @@ public interface RedisWriterOptions extends WriterOptions.BaseWriterOptions {
       key(WRITER_PREFIX + "ttl_type")
           .defaultValue("DAY");
 
-  ConfigOption<Integer> WRITE_BATCH_INTERVAL =
+  @SuppressWarnings("checkstyle:MagicNumber")
+  ConfigOption<Integer> WRITE_BATCH_SIZE =
       key(WRITER_PREFIX + "write_batch_interval")
-          .defaultValue(50);
+          .defaultValue(50)
+          .withAlias(WRITER_PREFIX + "write_batch_interval");
+
 
   /**
    * Data type to insert into redis.

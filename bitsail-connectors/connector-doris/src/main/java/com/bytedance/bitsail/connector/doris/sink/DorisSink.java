@@ -1,12 +1,11 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2022-2023 Bytedance Ltd. and/or its affiliates.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,7 +20,7 @@ import com.bytedance.bitsail.base.connector.writer.v1.Sink;
 import com.bytedance.bitsail.base.connector.writer.v1.Writer;
 import com.bytedance.bitsail.base.connector.writer.v1.WriterCommitter;
 import com.bytedance.bitsail.base.serializer.BinarySerializer;
-import com.bytedance.bitsail.base.serializer.SimpleBinarySerializer;
+import com.bytedance.bitsail.base.serializer.SimpleVersionedBinarySerializer;
 import com.bytedance.bitsail.common.configuration.BitSailConfiguration;
 import com.bytedance.bitsail.common.exception.CommonErrorCode;
 import com.bytedance.bitsail.common.model.ColumnInfo;
@@ -99,7 +98,7 @@ public class DorisSink<InputT> implements Sink<InputT, DorisCommittable, DorisWr
 
   @Override
   public Optional<WriterCommitter<DorisCommittable>> createCommitter() {
-    return Optional.of(new DorisCommitter(dorisOptions, dorisExecutionOptions.getWriterMode()));
+    return Optional.of(new DorisCommitter(dorisOptions, dorisExecutionOptions));
   }
 
   @Override
@@ -109,7 +108,7 @@ public class DorisSink<InputT> implements Sink<InputT, DorisCommittable, DorisWr
 
   @Override
   public BinarySerializer<DorisWriterState> getWriteStateSerializer() {
-    return new SimpleBinarySerializer<DorisWriterState>();
+    return new SimpleVersionedBinarySerializer<DorisWriterState>();
   }
 
   private void initDorisOptions(BitSailConfiguration writerConfiguration) {
@@ -124,7 +123,6 @@ public class DorisSink<InputT> implements Sink<InputT, DorisCommittable, DorisWr
         .fieldDelimiter(writerConfiguration.get(DorisWriterOptions.CSV_FIELD_DELIMITER))
         .lineDelimiter(writerConfiguration.get(DorisWriterOptions.CSV_LINE_DELIMITER))
         .tableHasPartitions(writerConfiguration.get(DorisWriterOptions.TABLE_HAS_PARTITION))
-        .tableModel(DorisOptions.TableModel.valueOf(writerConfiguration.get(DorisWriterOptions.TABLE_MODEL).toUpperCase().trim()))
         .loadDataFormat(DorisOptions.LOAD_CONTENT_TYPE.valueOf(writerConfiguration.get(DorisWriterOptions.LOAD_CONTEND_TYPE).toUpperCase()));
 
     if (this.writeMode.name().startsWith("STREAM")) {
@@ -155,8 +153,14 @@ public class DorisSink<InputT> implements Sink<InputT, DorisCommittable, DorisWr
         .maxRetries(writerConfiguration.get(DorisWriterOptions.SINK_MAX_RETRIES))
         .bufferCount(writerConfiguration.get(DorisWriterOptions.SINK_BUFFER_COUNT))
         .bufferSize(writerConfiguration.get(DorisWriterOptions.SINK_BUFFER_SIZE))
+        .recordCount(writerConfiguration.get(DorisWriterOptions.SINK_RECORD_COUNT))
+        .recordSize(writerConfiguration.get(DorisWriterOptions.SINK_RECORD_SIZE))
         .labelPrefix(writerConfiguration.get(DorisWriterOptions.SINK_LABEL_PREFIX))
         .enableDelete(writerConfiguration.get(DorisWriterOptions.SINK_ENABLE_DELETE))
+        .enable2PC(writerConfiguration.get(DorisWriterOptions.SINK_ENABLE_2PC))
+        .requestConnectTimeoutMs(writerConfiguration.get(DorisWriterOptions.REQUEST_CONNECT_TIMEOUTS))
+        .requestRetries(writerConfiguration.get(DorisWriterOptions.REQUEST_RETRIES))
+        .requestReadTimeoutMs(writerConfiguration.get(DorisWriterOptions.REQUEST_READ_TIMEOUTS))
         .writerMode(this.writeMode)
         .isBatch(this.writeMode.name().startsWith("BATCH"));
     Map<String, String> streamProperties =

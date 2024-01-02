@@ -1,12 +1,11 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2022-2023 Bytedance Ltd. and/or its affiliates.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,6 +17,7 @@
 package com.bytedance.bitsail.connector.doris.converter;
 
 import com.bytedance.bitsail.common.row.Row;
+import com.bytedance.bitsail.common.util.Preconditions;
 import com.bytedance.bitsail.connector.doris.typeinfo.DorisDataType;
 
 import java.io.Serializable;
@@ -29,15 +29,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.TimeZone;
 
-import static org.apache.flink.util.Preconditions.checkNotNull;
-
 public class DorisRowConverter implements Serializable {
 
   private static final long serialVersionUID = 1L;
   private final SerializationConverter[] serializationConverters;
 
   public DorisRowConverter(DorisDataType[] dataTypes) {
-    checkNotNull(dataTypes);
+    Preconditions.checkNotNull(dataTypes);
     this.serializationConverters = new SerializationConverter[dataTypes.length];
     for (int i = 0; i < dataTypes.length; i++) {
       DorisDataType dorisDataType = dataTypes[i];
@@ -47,7 +45,8 @@ public class DorisRowConverter implements Serializable {
 
   /**
    * Convert data from {@link Row}
-   * @param row record from bitsail row
+   *
+   * @param row   record from bitsail row
    * @param index the field index
    * @return java type value.
    */

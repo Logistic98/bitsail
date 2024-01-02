@@ -1,0 +1,45 @@
+#
+# Copyright 2022-2023 Bytedance Ltd. and/or its affiliates.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+#!/usr/bin/env bash
+set -e
+
+args=$@
+target="$0"
+bin=$(
+  cd $(dirname ${target})
+  pwd
+)
+SYMLINK_RESOLVED_BIN=$(
+  cd $bin
+  pwd -P
+)
+
+BITSAIL_HOME=$(dirname $SYMLINK_RESOLVED_BIN)
+BITSAIL_CONF_DIR=${BITSAIL_HOME}/conf
+BITSAIL_CLIENT_CLASSPATH=${BITSAIL_HOME}/libs/clients
+
+if [ -n "$HADOOP_HOME" ]; then
+  export HADOOP_CLASSPATH=$($HADOOP_HOME/bin/hadoop classpath)
+fi
+
+if [ -z "$BITSAIL_JAVA_OPTS" ]; then
+  export BITSAIL_JAVA_OPTS="-Xmx128M"
+fi
+
+export BITSAIL_HOME=${BITSAIL_HOME}
+
+exec java ${BITSAIL_JAVA_OPTS} -cp ${BITSAIL_CLIENT_CLASSPATH}/*:${HADOOP_CLASSPATH}:${BITSAIL_CONF_DIR}/* com.bytedance.bitsail.client.entry.Entry ${args}
